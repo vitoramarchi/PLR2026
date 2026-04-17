@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador PLR — Parcela Final Abr/2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue-950: #0a1628;
+    --blue-900: #0d2044;
+    --blue-700: #1d4ed8;
+    --blue-600: #2563eb;
+    --blue-500: #3b82f6;
+    --blue-400: #60a5fa;
+    --blue-300: #93c5fd;
+    --blue-100: #dbeafe;
+    --blue-50:  #eff6ff;
+    --white: #ffffff;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-700: #334155;
+    --amber-500: #f59e0b;
+    --amber-100: #fef3c7;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, var(--blue-950) 0%, var(--blue-900) 40%, #0f2d5a 100%);
+    min-height: 100vh;
+    color: var(--gray-700);
+    padding: 24px 16px 48px;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(29,78,216,0.12) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease both;
+  }
+  .header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59,130,246,0.2);
+    border: 1px solid rgba(96,165,250,0.3);
+    color: var(--blue-300);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .header h1 span { color: var(--blue-400); }
+  .header p {
+    margin-top: 10px;
+    color: var(--blue-300);
+    font-size: 14px;
+    opacity: 0.85;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .card-section {
+    padding: 28px 28px 24px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue-600);
+    margin-bottom: 20px;
+  }
+  .section-label::after {
+    content: ''; flex: 1;
+    height: 1px;
+    background: var(--blue-100);
+  }
+
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 13px; font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 7px;
+  }
+  .field label .hint {
+    font-weight: 400;
+    color: var(--gray-400);
+    font-size: 12px;
+    margin-left: 4px;
+  }
+
+  .input-wrap { position: relative; }
+  .input-prefix {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px; font-weight: 600;
+    color: var(--gray-400);
+    pointer-events: none;
+  }
+  .input-suffix {
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px; font-weight: 600;
+    color: var(--blue-500);
+    pointer-events: none;
+  }
+
+  input[type="text"], input[type="date"] {
+    width: 100%;
+    height: 46px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500;
+    color: var(--gray-700);
+    background: var(--gray-50);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    outline: none;
+    padding: 0 14px;
+  }
+  input.has-prefix { padding-left: 32px; }
+  input.has-suffix { padding-right: 44px; }
+  input:focus {
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    background: var(--white);
+  }
+  .input-wrap:focus-within .input-prefix { color: var(--blue-500); }
+
+  /* Toggle */
+  .toggle-group { display: flex; gap: 8px; }
+  .toggle-btn {
+    flex: 1;
+    height: 46px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+    background: var(--gray-50);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .toggle-btn:hover {
+    border-color: var(--blue-300);
+    color: var(--blue-600);
+    background: var(--blue-50);
+  }
+  .toggle-btn.active {
+    border-color: var(--blue-500);
+    background: var(--blue-50);
+    color: var(--blue-700);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .toggle-btn .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gray-300);
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-btn.active .dot { background: var(--blue-500); }
+
+  .date-input-row {
+    margin-top: 10px;
+    display: none;
+  }
+  .date-input-row.visible { display: block; }
+
+  /* Formula box */
+  .formula-box {
+    background: var(--blue-950);
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+  .formula-title {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue-400);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .formula-title::after {
+    content: ''; flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .formula-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 9px;
+  }
+  .formula-line:last-child { margin-bottom: 0; }
+
+  .f-lhs {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 500;
+    color: var(--blue-300);
+    min-width: 96px;
+    flex-shrink: 0;
+  }
+  .f-eq {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.25);
+    flex-shrink: 0;
+  }
+  .f-expr {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
+  }
+  .f-expr .kw { color: #a5f3fc; font-weight: 500; }
+  .f-expr .op { color: rgba(255,255,255,0.25); margin: 0 2px; }
+  .f-result {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.28);
+    margin-left: 4px;
+  }
+  .f-result.has-value { color: #86efac; }
+
+  .formula-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 11px 0;
+  }
+
+  /* Result */
+  .result-section {
+    padding: 28px;
+    background: linear-gradient(135deg, var(--blue-700) 0%, var(--blue-600) 100%);
+    color: white;
+  }
+  .result-label {
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 6px;
+  }
+  .result-value {
+    font-size: clamp(32px, 7vw, 48px);
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .result-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+  .result-breakdown {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .rb-item {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .rb-item .rb-l {
+    font-size: 11px; opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .rb-item .rb-v {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px; font-weight: 600;
+  }
+
+  /* Notes */
+  .notes-section {
+    padding: 20px 28px;
+    background: var(--amber-100);
+    border-top: 3px solid var(--amber-500);
+  }
+  .notes-section .notes-title {
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #92400e;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .notes-section ol { padding-left: 18px; }
+  .notes-section li {
+    font-size: 12px;
+    color: #78350f;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .value-changed { animation: pulse 0.35s ease; }
+  @keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  @media (max-width: 480px) {
+    .card-section { padding: 20px 18px; }
+    .result-section { padding: 22px 18px; }
+    .notes-section { padding: 16px 18px; }
+    .result-breakdown { grid-template-columns: 1fr; }
+    .formula-box { padding: 16px 14px; }
+    .f-lhs { min-width: 78px; }
+    .toggle-btn { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header class="header">
+    <div class="badge">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M5 3v2.5l1.5 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Parcela Final — Abr/2026
+    </div>
+    <h1>Simulador <span>PLR 2025</span></h1>
+    <p>Preencha os dados abaixo para calcular o valor que você vai receber</p>
+  </header>
+
+  <div class="card">
+
+    <div class="card-section">
+      <div class="section-label">Dados</div>
+
+      <div class="field">
+        <label>Salário base em 31/12/2025</label>
+        <div class="input-wrap">
+          <span class="input-prefix">R$</span>
+          <input type="text" id="salario" class="has-prefix" placeholder="0,00" inputmode="decimal" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Dias de direito PLR em 2025</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn active" id="btn365" onclick="selectDias('365')">
+            <span class="dot"></span>365 dias (padrão)
+          </button>
+          <button type="button" class="toggle-btn" id="btnCustom" onclick="selectDias('custom')">
+            <span class="dot"></span>Admitido(a) em 2025
+          </button>
+        </div>
+        <div class="date-input-row" id="dateRow">
+          <input type="date" id="admissao" min="2025-01-02" max="2025-12-31">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Antecipação PLR paga em Out/2025 
+        <div class="input-wrap">
+          <span class="input-prefix">R$</span>
+          <input type="text" id="antecipacao" class="has-prefix" placeholder="0,00" inputmode="decimal" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:0">
+        <label>Percentual de atingimento das metas 2025 
+        <div class="input-wrap">
+          <input type="text" id="metas" class="has-suffix" placeholder="0,00" inputmode="decimal" autocomplete="off">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fórmula -->
+    <div class="card-section">
+      <div class="section-label">Fórmula</div>
+      <div class="formula-box">
+        <div class="formula-title">Cálculo passo a passo</div>
+
+        <div class="formula-line">
+          <span class="f-lhs">Parcela</span>
+          <span class="f-eq">=</span>
+          <span class="f-expr">Salário <span class="op">×</span> <span class="kw">125%</span></span>
+          <span class="f-result" id="fA"></span>
+        </div>
+
+        <div class="formula-line">
+          <span class="f-lhs">Proporcional</span>
+          <span class="f-eq">=</span>
+          <span class="f-expr">Parcela <span class="op">÷</span> <span class="kw">365</span> <span class="op">×</span> <span class="kw" id="fDias">365</span> dias</span>
+          <span class="f-result" id="fB"></span>
+        </div>
+
+        <div class="formula-line">
+          <span class="f-lhs">PLR Total</span>
+          <span class="f-eq">=</span>
+          <span class="f-expr">Proporcional <span class="op">×</span> Metas <span class="kw">(<span id="fMetasCap">—</span>)</span></span>
+          <span class="f-result" id="fC"></span>
+        </div>
+
+        <div class="formula-divider"></div>
+
+        <div class="formula-line">
+          <span class="f-lhs">Resultado</span>
+          <span class="f-eq">=</span>
+          <span class="f-expr">PLR Total <span class="op">−</span> Antecipação</span>
+          <span class="f-result" id="fF"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="result-section">
+      <div class="result-label">Valor a receber — Parcela Final Abr/2026</div>
+      <div class="result-value" id="vFinal">R$ 0,00</div>
+      <div class="result-sub" id="resultSub">Preencha os campos acima para calcular</div>
+
+      <div class="result-breakdown">
+        <div class="rb-item">
+          <div class="rb-l">PLR Total</div>
+          <div class="rb-v" id="rbC">R$ 0,00</div>
+        </div>
+        <div class="rb-item">
+          <div class="rb-l">Antecipação Out/25</div>
+          <div class="rb-v" id="rbD">R$ 0,00</div>
+        </div>
+        <div class="rb-item">
+          <div class="rb-l">Metas (cap 120%)</div>
+          <div class="rb-v" id="rbMetas">—</div>
+        </div>
+        <div class="rb-item">
+          <div class="rb-l">Dias de direito</div>
+          <div class="rb-v" id="rbDias">365</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notas -->
+    <div class="notes-section">
+      <div class="notes-title">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L1 7h3v5h5V7h3L6.5 1z" stroke="#92400e" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        Observações importantes
+      </div>
+      <ol>
+        <li>A Parcela Final da PLR é paga com base nos dias trabalhados entre 01/01/2025 e 31/12/2025 (365 dias).</li>
+        <li>Este simulador <strong>não</strong> considera valores de pensão alimentícia sobre PLR.</li>
+        <li>Este simulador <strong>não</strong> considera ausências, o que pode afetar o valor líquido.</li>
+        <li>O cálculo de Imposto de Renda não está incluído neste simulador.</li>
+      </ol>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let diasMode = '365';
+
+  function selectDias(mode) {
+    diasMode = mode;
+    document.getElementById('btn365').classList.toggle('active', mode === '365');
+    document.getElementById('btnCustom').classList.toggle('active', mode === 'custom');
+    const dateRow = document.getElementById('dateRow');
+    if (mode === 'custom') {
+      dateRow.classList.add('visible');
+    } else {
+      dateRow.classList.remove('visible');
+      document.getElementById('admissao').value = '';
+    }
+    calcular();
+  }
+
+  function parseBR(str) {
+    if (!str || str.trim() === '') return 0;
+    let s = str.trim().replace(/\s/g, '');
+    if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+    const v = parseFloat(s);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function fmtBRL(n) {
+    if (isNaN(n) || n === null) n = 0;
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
+  }
+
+  function animateVal(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const txt = fmtBRL(value);
+    if (el.textContent !== txt) {
+      el.textContent = txt;
+      el.classList.remove('value-changed');
+      void el.offsetWidth;
+      el.classList.add('value-changed');
+    }
+  }
+
+  function getDias() {
+    if (diasMode === '365') return 365;
+    const val = document.getElementById('admissao').value;
+    if (!val) return null;
+    const adm = new Date(val + 'T00:00:00');
+    const fim = new Date('2025-12-31T00:00:00');
+    const diff = Math.round((fim - adm) / (1000 * 60 * 60 * 24)) + 1;
+    return Math.max(1, Math.min(365, diff));
+  }
+
+  function setFormulaResult(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (value === null) {
+      el.textContent = '';
+      el.classList.remove('has-value');
+    } else {
+      el.textContent = '= ' + fmtBRL(value);
+      el.classList.add('has-value');
+    }
+  }
+
+  function calcular() {
+    const salario     = parseBR(document.getElementById('salario').value);
+    const antecipacao = parseBR(document.getElementById('antecipacao').value);
+    const metasInput  = parseBR(document.getElementById('metas').value);
+    const dias        = getDias();
+
+    const metas    = metasInput / 100;
+    const metasCap = Math.min(metas, 1.2);
+
+    document.getElementById('fDias').textContent = dias !== null ? dias : '?';
+    document.getElementById('fMetasCap').textContent =
+      metasInput > 0 ? (metasCap * 100).toFixed(1) + '%' : '—';
+    document.getElementById('rbMetas').textContent =
+      metasInput > 0 ? (metasCap * 100).toFixed(1) + '%' : '—';
+    document.getElementById('rbDias').textContent = dias !== null ? dias : '—';
+
+    if (dias === null) {
+      setFormulaResult('fA', null);
+      setFormulaResult('fB', null);
+      setFormulaResult('fC', null);
+      setFormulaResult('fF', null);
+      animateVal('vFinal', 0);
+      animateVal('rbC', 0);
+      animateVal('rbD', antecipacao);
+      document.getElementById('resultSub').textContent = 'Selecione a data de admissão';
+      return;
+    }
+
+    const A = salario * 1.25;
+    const B = (A / 365) * dias;
+    const C = B * metasCap;
+    const F = C - antecipacao;
+
+    setFormulaResult('fA', salario > 0 ? A : null);
+    setFormulaResult('fB', salario > 0 ? B : null);
+    setFormulaResult('fC', salario > 0 && metasInput > 0 ? C : null);
+    setFormulaResult('fF', salario > 0 && metasInput > 0 ? F : null);
+
+    animateVal('vFinal', F);
+    animateVal('rbC', C);
+    animateVal('rbD', antecipacao);
+
+    const sub = document.getElementById('resultSub');
+    if (salario > 0 && metasInput > 0) {
+      sub.textContent = 'Valor estimado antes do Imposto de Renda';
+    } else {
+      sub.textContent = 'Preencha os campos acima para calcular';
+    }
+  }
+
+  function currencyMask(e) {
+    let v = e.target.value.replace(/\D/g, '');
+    if (!v) { e.target.value = ''; return; }
+    v = (parseInt(v, 10) / 100).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+    e.target.value = v;
+  }
+
+  function percentMask(e) {
+    let v = e.target.value.replace(/[^\d,]/g, '');
+    const parts = v.split(',');
+    if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('');
+    e.target.value = v;
+  }
+
+  document.getElementById('salario').addEventListener('input', (e) => { currencyMask(e); calcular(); });
+  document.getElementById('antecipacao').addEventListener('input', (e) => { currencyMask(e); calcular(); });
+  document.getElementById('metas').addEventListener('input', (e) => { percentMask(e); calcular(); });
+  document.getElementById('admissao').addEventListener('change', calcular);
+</script>
+</body>
+</html>
